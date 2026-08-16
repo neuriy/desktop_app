@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('electron', {
       callback(isVisible)
     );
   },
+  openExternal: (url: string) => ipcRenderer.send('open-external', url),
 });
