@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { NeuriyAuthProvider, NeuriyAuthGuard } from '@neuriy/auth';
+import { ensureNeuriyAuth } from './lib/neuriy-auth';
 import { DesktopPanel } from './components/DesktopPanel';
+import { LoginPanel } from './components/LoginPanel';
+
+ensureNeuriyAuth();
 
 function App() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Listen for toggle events from Electron
-    if (window.electron && window.electron.onTogglePanel) {
+    if (window.electron?.onTogglePanel) {
       window.electron.onTogglePanel((visible: boolean) => {
         setIsVisible(visible);
       });
     } else {
-      // Fallback for browser dev mode
+      // Browser / Vite preview fallback
       setIsVisible(true);
     }
   }, []);
@@ -24,21 +28,32 @@ function App() {
   };
 
   return (
-    <div className="w-screen h-screen bg-transparent flex items-start justify-end p-2 overflow-hidden">
-      <AnimatePresence onExitComplete={handleAnimationComplete}>
-        {isVisible && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="origin-top-right"
-          >
-            <DesktopPanel />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <NeuriyAuthProvider>
+      <div className="w-screen h-screen bg-transparent flex items-start justify-end p-2 overflow-hidden">
+        <AnimatePresence onExitComplete={handleAnimationComplete}>
+          {isVisible && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              className="origin-top-right"
+            >
+              <NeuriyAuthGuard
+                fallback={
+                  <div className="w-[360px] h-[500px] rounded-[24px] bg-zinc-900/95 border border-white/10 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  </div>
+                }
+                unauthenticated={<LoginPanel />}
+              >
+                {() => <DesktopPanel />}
+              </NeuriyAuthGuard>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </NeuriyAuthProvider>
   );
 }
 

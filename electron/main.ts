@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, ipcMain, screen: electronScreen, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, ipcMain, screen: electronScreen, nativeImage, shell } = require('electron');
 const path = require('path');
 
 let mainWindow: any = null;
@@ -120,4 +120,20 @@ ipcMain.on('hide-panel', () => {
     mainWindow.hide();
     isPanelVisible = false;
   }
+});
+
+ipcMain.on('open-external', (_event: unknown, url: string) => {
+  if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+    void shell.openExternal(url);
+  }
+});
+
+// Allow Firebase Auth popups / OAuth redirects from the panel
+app.on('web-contents-created', (_event: unknown, contents: any) => {
+  contents.setWindowOpenHandler(({ url }: { url: string }) => {
+    if (/^https?:\/\//i.test(url)) {
+      void shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
 });
