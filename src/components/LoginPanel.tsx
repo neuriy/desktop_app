@@ -46,8 +46,8 @@ export function LoginPanel() {
     <div className="w-[360px] h-[500px] rounded-[24px] bg-gradient-to-br from-zinc-800/95 to-zinc-950/95 backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(124,58,237,0.25),_transparent_55%)] pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col h-full px-6 pt-8 pb-6">
-        <div className="flex items-center space-x-2 mb-6">
+      <div className="relative z-10 flex flex-col h-full px-6 pt-6 pb-4">
+        <div className="flex items-center space-x-2 mb-4">
           <div className="w-6 h-6 bg-gradient-to-tr from-violet-500 to-sky-400 rounded-full shadow-sm" />
           <span className="font-semibold text-sm text-white tracking-wide">Neuriy</span>
         </div>
@@ -59,18 +59,18 @@ export function LoginPanel() {
         >
           Sign in
         </motion.h1>
-        <p className="text-white/50 text-sm mb-5">
+        <p className="text-white/50 text-sm mb-4">
           Use your Neuriy nID — same account as the IDHook login web app.
         </p>
 
-        <form onSubmit={handleEmailContinue} className="space-y-3">
+        <form onSubmit={handleEmailContinue} className="space-y-2.5">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
             disabled={isLoading}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-sm text-white placeholder-white/35 focus:outline-none focus:border-white/35"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-sm text-white placeholder-white/35 focus:outline-none focus:border-white/35"
           />
           <input
             type="password"
@@ -78,7 +78,7 @@ export function LoginPanel() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             disabled={isLoading}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-sm text-white placeholder-white/35 focus:outline-none focus:border-white/35"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-sm text-white placeholder-white/35 focus:outline-none focus:border-white/35"
           />
 
           {error && (
@@ -90,24 +90,24 @@ export function LoginPanel() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-white hover:bg-zinc-200 text-black font-semibold py-3 rounded-full transition-colors disabled:opacity-60"
+            className="w-full bg-white hover:bg-zinc-200 text-black font-semibold py-2.5 rounded-full transition-colors disabled:opacity-60"
           >
             {isLoading ? 'Signing in…' : 'Continue'}
           </button>
         </form>
 
-        <div className="flex items-center gap-2 my-4 opacity-60">
+        <div className="flex items-center gap-2 my-3 opacity-60">
           <div className="flex-1 h-px bg-white/20" />
           <span className="text-white/50 text-[10px] font-semibold tracking-wider">OR</span>
           <div className="flex-1 h-px bg-white/20" />
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <button
             type="button"
             disabled={isLoading}
             onClick={() => void runAuth(() => signInWithGoogle())}
-            className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white text-sm font-medium py-2.5 rounded-2xl transition-all flex items-center justify-center gap-2"
+            className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white text-sm font-medium py-2 rounded-2xl transition-all flex items-center justify-center gap-2"
           >
             Continue with Google
           </button>
@@ -115,7 +115,7 @@ export function LoginPanel() {
             type="button"
             disabled={isLoading}
             onClick={() => void runAuth(() => signInWithYahoo())}
-            className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white text-sm font-medium py-2.5 rounded-2xl transition-all flex items-center justify-center gap-2"
+            className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white text-sm font-medium py-2 rounded-2xl transition-all flex items-center justify-center gap-2"
           >
             Continue with Yahoo
           </button>
@@ -123,13 +123,13 @@ export function LoginPanel() {
             type="button"
             disabled={isLoading}
             onClick={openNeuriyIdWeb}
-            className="w-full bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/40 text-white text-sm font-medium py-2.5 rounded-2xl transition-all"
+            className="w-full bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/40 text-white text-sm font-medium py-2 rounded-2xl transition-all"
           >
             Open Neuriy ID web login
           </button>
         </div>
 
-        <p className="mt-auto pt-4 text-[10px] text-white/35 text-center leading-relaxed">
+        <p className="mt-auto pt-3 text-[10px] text-white/35 text-center leading-relaxed">
           Powered by <span className="text-white/55">@neuriy/auth</span> from IDHook
         </p>
       </div>

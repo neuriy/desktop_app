@@ -34,9 +34,9 @@ Tray-resident AI assistant panel for macOS / Windows / Linux. Frontend auth is p
 
 ### Demo video
 
-<video src="docs/demo/auth-flow.mp4" controls width="480"></video>
+[Watch auth-flow.mp4](docs/demo/auth-flow.mp4) — email sign-in through `@neuriy/auth` into the Face AI panel (~9s).
 
-If the embed does not play on GitHub, download [`docs/demo/auth-flow.mp4`](docs/demo/auth-flow.mp4).
+<video src="docs/demo/auth-flow.mp4" controls width="640"></video>
 
 ## Quick start
 
@@ -70,6 +70,7 @@ Optional overrides — copy `.env.example` → `.env.local`:
 | --- | --- |
 | `npm run dev` | Electron desktop + Vite HMR |
 | `npm run dev:web` | Vite only (good for auth UI testing) |
+| `npm run demo:capture` | Playwright screenshots + short auth video |
 | `npm run typecheck` | TypeScript check (renderer + electron) |
 | `npm run build` | Production Electron build |
 | `npm run build:web` | Vite production bundle |
