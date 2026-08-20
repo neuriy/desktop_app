@@ -91,13 +91,19 @@ Desktop UI ── @neuriy/auth ── shared Firebase (IDHook nID)
 
 ### Demo
 
-| Login | Signed-in | Linux tray (Cursor PC) |
+| Login | ElloFive signed-in (Firebase) | Google → system browser |
 | --- | --- | --- |
-| ![Login](docs/demo/login-panel.png) | ![Signed in](docs/demo/desktop-signed-in.png) | ![Linux tray](docs/demo/linux-tray-panel.png) |
+| ![Login](docs/demo/demo-login.png) | ![Signed in Face AI](docs/demo/demo-face-signed-in.png) | ![Google Chrome](docs/demo/demo-google-browser.png) |
 
-[auth-flow.mp4](docs/demo/auth-flow.mp4)
+**Videos**
 
-Linux smoke test (XFCE / Cursor cloud desktop): native status-area icon + login panel — see `docs/demo/linux-tray-panel.png` and `docs/demo/linux-tray-icon.png`.
+- Full walkthrough: [neuriy-full-demo.mp4](docs/demo/neuriy-full-demo.mp4) — email login against Firebase Auth DB → Face AI → Google opens computer Chrome
+- Email / Face AI only: [neuriy-ello-five-demo.mp4](docs/demo/neuriy-ello-five-demo.mp4)
+- Google opens browser: [google-opens-browser.mp4](docs/demo/google-opens-browser.mp4)
+
+Linux smoke test (tray): `docs/demo/linux-tray-panel.png`
+
+**Continue with Google** opens the OS default browser via `shell.openExternal` (not an Electron popup).
 
 ## Quick start
 

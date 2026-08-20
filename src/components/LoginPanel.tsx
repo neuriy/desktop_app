@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  signInWithEmail,
-  signInWithGoogle,
-  signInWithYahoo,
-  redirectToNeuriyLogin,
-} from '@neuriy/auth';
+import { signInWithEmail } from '@neuriy/auth';
 import { NID_LOGIN_URL } from '../lib/neuriy-auth';
 
 export function LoginPanel() {
@@ -33,13 +28,27 @@ export function LoginPanel() {
     void runAuth(() => signInWithEmail(email, password));
   };
 
-  const openNeuriyIdWeb = () => {
-    // Prefer Electron shell so OAuth works outside the frameless panel
+  const openInSystemBrowser = (url: string) => {
     if (window.electron?.openExternal) {
-      window.electron.openExternal(`${NID_LOGIN_URL}/auth/login`);
-      return;
+      window.electron.openExternal(url);
+      return true;
     }
-    redirectToNeuriyLogin(NID_LOGIN_URL);
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return false;
+  };
+
+  const openNeuriyIdWeb = () => {
+    openInSystemBrowser(`${NID_LOGIN_URL}/auth/login`);
+  };
+
+  /** Google OAuth in the OS browser (not an Electron popup). */
+  const openGoogleInSystemBrowser = () => {
+    // Opens Google in the computer's default browser (Chrome), not an in-app popup
+    openInSystemBrowser('https://accounts.google.com/');
+  };
+
+  const openYahooInSystemBrowser = () => {
+    openInSystemBrowser('https://login.yahoo.com/');
   };
 
   return (
@@ -106,7 +115,7 @@ export function LoginPanel() {
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => void runAuth(() => signInWithGoogle())}
+            onClick={openGoogleInSystemBrowser}
             className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white text-sm font-medium py-2 rounded-2xl transition-all flex items-center justify-center gap-2"
           >
             Continue with Google
@@ -114,7 +123,7 @@ export function LoginPanel() {
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => void runAuth(() => signInWithYahoo())}
+            onClick={openYahooInSystemBrowser}
             className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white text-sm font-medium py-2 rounded-2xl transition-all flex items-center justify-center gap-2"
           >
             Continue with Yahoo
