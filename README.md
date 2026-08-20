@@ -1,8 +1,32 @@
 # Neuriy Desktop
 
-Cross-platform tray / menu-bar AI assistant for **macOS**, **Windows**, and **Linux**. Auth is powered by **[@neuriy/auth](https://github.com/neuriy/IDHook)** (Neuriy nID).
+Cross-platform tray / menu-bar AI assistant for **macOS**, **Windows**, and **Linux**.
+
+- **Auth:** [@neuriy/auth](https://github.com/neuriy/IDHook) (Neuriy nID / Firebase)
+- **Brain:** [ElloFive](https://github.com/EricksonAtHome/ElloFive) — your Ello5 coding AI (Ollama + `/v1/chat`)
 
 The app runs in the background with a **native** system tray / menu-bar icon. Closing the popup does not quit the app.
+
+## ElloFive AI
+
+Neuriy’s “Ask …” box talks to **ElloFive** ([EricksonAtHome/ElloFive](https://github.com/EricksonAtHome/ElloFive)):
+
+```text
+Neuriy DesktopPanel  →  POST /v1/chat  →  ElloFive API  →  Ollama (ellofive model)
+```
+
+```bash
+# On the machine running ElloFive:
+ellofive serve          # Ollama runtime
+ellofive api            # gateway on :3000  (Elloten UI + /v1/chat)
+
+# Point Neuriy at it (.env.local):
+VITE_ELLOFIVE_API_URL=http://127.0.0.1:3000
+VITE_ELLOFIVE_MODEL=ellofive
+```
+
+Cloud hosts (when deployed): `api.ello5.com` — see ElloFive `docs/domains.md`.
+
 
 ## Cross-platform System Tray / Menu Bar
 
