@@ -3,7 +3,7 @@ import { TopBar } from './TopBar';
 import { FaceCanvas } from './FaceAI';
 import { useNeuriyAuth } from '@neuriy/auth';
 import { Settings, SendHorizontal } from 'lucide-react';
-import { askElloFive, checkElloFiveHealth, getElloFiveModel } from '../lib/ellofive';
+import { askAgiCore, checkAgiHealth } from '../lib/agi-core';
 
 interface DesktopPanelProps {
   onOpenSettings?: () => void;
@@ -14,21 +14,19 @@ export function DesktopPanel({ onOpenSettings }: DesktopPanelProps) {
   const firstName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   const [prompt, setPrompt] = useState('');
   const [reply, setReply] = useState('');
-  const [status, setStatus] = useState('Checking ElloFive…');
+  const [summary, setSummary] = useState('');
+  const [status, setStatus] = useState('Checking AGI Core…');
   const [busy, setBusy] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const health = await checkElloFiveHealth();
+      const health = await checkAgiHealth();
       if (cancelled) return;
-      setStatus(
-        health.ok
-          ? `ElloFive · ${getElloFiveModel()} online`
-          : 'ElloFive offline — start ellofive api'
-      );
+      setStatus(health.ok ? health.detail : health.detail);
     })();
     return () => {
       cancelled = true;
@@ -41,16 +39,22 @@ export function DesktopPanel({ onOpenSettings }: DesktopPanelProps) {
     setBusy(true);
     setIsSpeaking(true);
     setReply('');
-    setStatus('ElloFive thinking…');
+    setSummary('');
+    setProgress(null);
+    setStatus('AGI Core · planning…');
     try {
-      const result = await askElloFive(text);
+      const result = await askAgiCore(text, user
+        ? { id: user.uid, displayName: user.displayName, email: user.email }
+        : undefined);
       if (result.ok) {
-        setReply(result.output);
-        setStatus(`ElloFive · ${result.model}`);
+        setReply(result.reply);
+        setSummary(result.summary || '');
+        setStatus(result.model ? `AGI Core · ${result.model}` : 'AGI Core · done');
+        setProgress(result.taskId ? 100 : null);
         setPrompt('');
       } else {
-        setReply(result.error || 'ElloFive error');
-        setStatus('ElloFive error');
+        setReply(result.error || 'AGI Core error');
+        setStatus('AGI Core error');
       }
     } finally {
       setBusy(false);
@@ -65,28 +69,34 @@ export function DesktopPanel({ onOpenSettings }: DesktopPanelProps) {
       <div className="flex-1 relative flex flex-col items-center justify-center min-h-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-violet-500/20 blur-[70px] rounded-full pointer-events-none" />
 
-        <div className="w-full h-[200px] relative z-10 -mt-4 shrink-0">
+        <div className="w-full h-[170px] relative z-10 -mt-2 shrink-0">
           <FaceCanvas theme="dark" isSpeaking={isSpeaking} />
         </div>
 
         <p className="text-white/45 text-[11px] z-10 px-4 text-center shrink-0">
-          Signed in as {firstName} · powered by{' '}
-          <a
-            href="https://github.com/EricksonAtHome/ElloFive"
-            target="_blank"
-            rel="noreferrer"
-            className="text-violet-300/90 hover:text-violet-200 underline-offset-2 hover:underline"
-          >
-            ElloFive
-          </a>
+          Signed in as {firstName} · Neuriy AGI Core
         </p>
-        <p className="text-white/30 text-[10px] mt-0.5 z-10 shrink-0">{status}</p>
+        <p className="text-white/30 text-[10px] mt-0.5 z-10 shrink-0 px-4 text-center">{status}</p>
 
-        {reply && (
+        {progress !== null && (
+          <div className="w-[calc(100%-2rem)] mx-4 mt-1 z-10">
+            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-violet-400/80 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {(reply || summary) && (
           <div
-            className="mx-4 mt-2 mb-1 max-h-[88px] overflow-y-auto z-10 w-[calc(100%-2rem)] rounded-2xl bg-black/35 border border-white/10 px-3 py-2 text-[12px] text-white/80 leading-relaxed whitespace-pre-wrap"
+            className="mx-4 mt-2 mb-1 max-h-[100px] overflow-y-auto z-10 w-[calc(100%-2rem)] rounded-2xl bg-black/35 border border-white/10 px-3 py-2 text-[12px] text-white/80 leading-relaxed whitespace-pre-wrap"
             role="status"
           >
+            {summary && (
+              <p className="text-[10px] text-violet-300/80 mb-1">{summary}</p>
+            )}
             {reply}
           </div>
         )}
@@ -104,16 +114,16 @@ export function DesktopPanel({ onOpenSettings }: DesktopPanelProps) {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={busy}
-              placeholder="Ask ElloFive anything…"
+              placeholder="Ask Neuriy anything…"
               className="w-full bg-transparent text-sm text-white placeholder-white/35 outline-none disabled:opacity-60"
-              aria-label="Message ElloFive"
+              aria-label="Ask Neuriy AGI Core"
             />
           </div>
           <button
             type="submit"
             disabled={busy || !prompt.trim()}
             className="h-12 w-12 rounded-full bg-violet-500/25 border border-violet-400/40 text-white/90 hover:bg-violet-500/40 flex items-center justify-center disabled:opacity-40"
-            aria-label="Send to ElloFive"
+            aria-label="Send"
           >
             <SendHorizontal size={16} />
           </button>

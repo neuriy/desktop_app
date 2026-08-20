@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_NID_LOGIN_URL?: string;
   readonly VITE_ELLOFIVE_API_URL?: string;
   readonly VITE_ELLOFIVE_MODEL?: string;
+  readonly VITE_AGI_CORE_URL?: string;
 }
 
 interface ImportMeta {

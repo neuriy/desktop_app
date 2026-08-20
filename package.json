@@ -5,7 +5,11 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "concurrently -k \"vite --port 5173\" \"npm run electron:compile && npm run electron:start\"",
+    "dev:all": "concurrently -k \"npm run agi:dev\" \"vite --port 5173\" \"npm run electron:compile && npm run electron:start\"",
     "dev:web": "vite --port 5173",
+    "agi:dev": "npm run dev --prefix agi-core",
+    "agi:build": "npm run build --prefix agi-core",
+    "agi:start": "npm run start --prefix agi-core",
     "demo:capture": "node scripts/capture-auth-demo.mjs",
     "icons": "node scripts/generate-icons.js",
     "electron:compile": "tsc -p tsconfig.electron.json",
@@ -16,7 +20,7 @@
     "build:win": "npm run icons && vite build && tsc -p tsconfig.electron.json && electron-builder --win",
     "build:linux": "npm run icons && vite build && tsc -p tsconfig.electron.json && electron-builder --linux",
     "build:web": "vite build",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit && npm run typecheck --prefix agi-core",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -205,15 +205,13 @@ class SystemTrayServiceImpl {
       { id: 'separator', type: 'separator', label: '' },
       { id: 'status', label: this.statusLabel, readonly: true },
       { id: 'separator-2', type: 'separator', label: '' },
-      { id: 'open', label: 'Open App' },
-      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'open', label: 'Open Neuriy' },
+      { id: 'ask', label: 'Ask Neuriy' },
+      { id: 'start-task', label: 'Start Task' },
+      { id: 'active-tasks', label: 'Active Tasks' },
+      { id: 'notifications', label: 'Notifications', type: 'checkbox', checked: this.notificationsEnabled },
+      { id: 'memory', label: 'Memory' },
       { id: 'settings', label: 'Settings' },
-      {
-        id: 'notifications',
-        label: 'Notifications',
-        type: 'checkbox',
-        checked: this.notificationsEnabled,
-      },
       {
         id: 'launch-at-login',
         label: 'Launch at Login',
@@ -232,7 +230,11 @@ class SystemTrayServiceImpl {
   private handleMenuAction(itemId: string): void {
     switch (itemId) {
       case 'open':
+      case 'ask':
       case 'dashboard':
+      case 'start-task':
+      case 'active-tasks':
+      case 'memory':
         this.openDashboard();
         break;
       case 'settings':

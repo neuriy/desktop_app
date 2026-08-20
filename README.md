@@ -3,29 +3,35 @@
 Cross-platform tray / menu-bar AI assistant for **macOS**, **Windows**, and **Linux**.
 
 - **Auth:** [@neuriy/auth](https://github.com/neuriy/IDHook) (Neuriy nID / Firebase)
-- **Brain:** [ElloFive](https://github.com/EricksonAtHome/ElloFive) — your Ello5 coding AI (Ollama + `/v1/chat`)
+- **AGI Core:** `agi-core/` — agent orchestration (memory, planning, tools, permissions, tasks)
+- **Models:** [ElloFive](https://github.com/EricksonAtHome/ElloFive) via Model Router (plus offline heuristic)
 
-The app runs in the background with a **native** system tray / menu-bar icon. Closing the popup does not quit the app.
+```text
+Neuriy Desktop  →  Agent Interface  →  NEURIY AGI CORE  →  ElloFive / tools / memory
+```
+
+The desktop app, login UI, and tray remain; AGI Core is a separate backend process.
+
+## Neuriy AGI Core
+
+```bash
+npm run agi:dev          # http://127.0.0.1:8787
+npm run dev:all          # AGI Core + Vite + Electron together
+```
+
+See [`agi-core/README.md`](agi-core/README.md) for API, phases, and architecture.
+
+Desktop “Ask Neuriy anything…” calls `POST /agent/chat` (not a raw LLM passthrough).
 
 ## ElloFive AI
 
-Neuriy’s “Ask …” box talks to **ElloFive** ([EricksonAtHome/ElloFive](https://github.com/EricksonAtHome/ElloFive)):
-
-```text
-Neuriy DesktopPanel  →  POST /v1/chat  →  ElloFive API  →  Ollama (ellofive model)
-```
+Optional LLM backend for the Model Router:
 
 ```bash
-# On the machine running ElloFive:
-ellofive serve          # Ollama runtime
-ellofive api            # gateway on :3000  (Elloten UI + /v1/chat)
-
-# Point Neuriy at it (.env.local):
-VITE_ELLOFIVE_API_URL=http://127.0.0.1:3000
-VITE_ELLOFIVE_MODEL=ellofive
+ellofive serve && ellofive api    # :3000
+# ELLOFIVE_API_URL=http://127.0.0.1:3000  (AGI Core)
+# VITE_AGI_CORE_URL=http://127.0.0.1:8787 (Desktop)
 ```
-
-Cloud hosts (when deployed): `api.ello5.com` — see ElloFive `docs/domains.md`.
 
 
 ## Cross-platform System Tray / Menu Bar
