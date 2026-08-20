@@ -12,6 +12,8 @@ const isDev = process.env.NODE_ENV !== 'production';
 export class PanelWindow {
   private window: Electron.BrowserWindow | null = null;
   private visible = false;
+  /** Ignore blur briefly after a tray click so hide/show does not race. */
+  private ignoreBlurUntil = 0;
 
   create(): Electron.BrowserWindow {
     if (this.window) return this.window;
@@ -42,7 +44,7 @@ export class PanelWindow {
     }
 
     this.window.on('blur', () => {
-      // Keep panel open while an OS auth popup / external window is focused? — hide for tray UX
+      if (Date.now() < this.ignoreBlurUntil) return;
       if (this.visible) this.hide();
     });
 
@@ -63,12 +65,15 @@ export class PanelWindow {
   }
 
   toggle(bounds?: TrayBounds): void {
-    if (this.isVisible()) this.hide();
+    // Tray clicks often blur the panel first; treat as intentional open/toggle
+    this.ignoreBlurUntil = Date.now() + 400;
+    if (this.isVisible()) this.hideImmediate();
     else this.show(bounds);
   }
 
   show(bounds?: TrayBounds): void {
     const win = this.create();
+    this.ignoreBlurUntil = Date.now() + 400;
     const pos = this.getPosition(bounds);
     win.setPosition(pos.x, pos.y, false);
     win.show();

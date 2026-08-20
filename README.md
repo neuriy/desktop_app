@@ -91,11 +91,13 @@ Desktop UI ── @neuriy/auth ── shared Firebase (IDHook nID)
 
 ### Demo
 
-| Login | Signed-in |
-| --- | --- |
-| ![Login](docs/demo/login-panel.png) | ![Signed in](docs/demo/desktop-signed-in.png) |
+| Login | Signed-in | Linux tray (Cursor PC) |
+| --- | --- | --- |
+| ![Login](docs/demo/login-panel.png) | ![Signed in](docs/demo/desktop-signed-in.png) | ![Linux tray](docs/demo/linux-tray-panel.png) |
 
 [auth-flow.mp4](docs/demo/auth-flow.mp4)
+
+Linux smoke test (XFCE / Cursor cloud desktop): native status-area icon + login panel — see `docs/demo/linux-tray-panel.png` and `docs/demo/linux-tray-icon.png`.
 
 ## Quick start
 
