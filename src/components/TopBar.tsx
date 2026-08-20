@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, BatteryMedium, LogOut } from 'lucide-react';
+import { Wifi, BatteryMedium, LogOut, Settings } from 'lucide-react';
 import { signOut, useNeuriyAuth } from '@neuriy/auth';
 
-export function TopBar() {
+interface TopBarProps {
+  onOpenSettings?: () => void;
+}
+
+export function TopBar({ onOpenSettings }: TopBarProps) {
   const [time, setTime] = useState(new Date());
   const { user } = useNeuriyAuth();
 
@@ -31,6 +35,17 @@ export function TopBar() {
         </span>
       </div>
       <div className="flex items-center space-x-3 text-white/80 shrink-0">
+        {onOpenSettings && (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            title="Settings"
+            className="hover:text-white transition-colors"
+            aria-label="Settings"
+          >
+            <Settings size={15} />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => void signOut()}

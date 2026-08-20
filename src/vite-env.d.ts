@@ -14,10 +14,29 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+interface TraySettings {
+  launchAtLogin: boolean;
+  notificationsEnabled: boolean;
+  statusLabel: string;
+}
+
 interface Window {
   electron?: {
     hidePanel: () => void;
     onTogglePanel: (callback: (isVisible: boolean) => void) => void;
     openExternal: (url: string) => void;
+    getTrayPlatform?: () => Promise<string>;
+    getTraySettings?: () => Promise<TraySettings>;
+    setTraySettings?: (partial: {
+      launchAtLogin?: boolean;
+      notificationsEnabled?: boolean;
+    }) => Promise<TraySettings>;
+    showTrayNotification?: (payload: {
+      title: string;
+      body: string;
+      silent?: boolean;
+    }) => Promise<void>;
+    quitApp?: () => void;
+    onNavigate?: (callback: (route: string) => void) => void;
   };
 }

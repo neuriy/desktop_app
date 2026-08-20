@@ -2,14 +2,19 @@ import React from 'react';
 import { TopBar } from './TopBar';
 import { FaceCanvas } from './FaceAI';
 import { useNeuriyAuth } from '@neuriy/auth';
+import { Settings } from 'lucide-react';
 
-export function DesktopPanel() {
+interface DesktopPanelProps {
+  onOpenSettings?: () => void;
+}
+
+export function DesktopPanel({ onOpenSettings }: DesktopPanelProps) {
   const { user } = useNeuriyAuth();
   const firstName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
   return (
     <div className="w-[360px] h-[500px] rounded-[24px] bg-gradient-to-br from-zinc-800/90 to-zinc-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden relative">
-      <TopBar />
+      <TopBar onOpenSettings={onOpenSettings} />
       <div className="flex-1 relative flex flex-col items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-violet-500/20 blur-[70px] rounded-full pointer-events-none" />
 
@@ -21,10 +26,20 @@ export function DesktopPanel() {
           Signed in as {firstName}
         </p>
 
-        <div className="absolute bottom-6 w-full px-6 z-10">
-          <div className="w-full bg-black/40 rounded-full h-12 flex items-center px-4 border border-white/5 backdrop-blur-md shadow-inner transition-colors hover:border-white/10 hover:bg-black/50">
+        <div className="absolute bottom-6 w-full px-6 z-10 flex items-center gap-2">
+          <div className="flex-1 bg-black/40 rounded-full h-12 flex items-center px-4 border border-white/5 backdrop-blur-md shadow-inner transition-colors hover:border-white/10 hover:bg-black/50">
             <span className="text-white/40 text-sm">Ask Neuriy anything...</span>
           </div>
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="h-12 w-12 rounded-full bg-black/40 border border-white/5 text-white/60 hover:text-white hover:border-white/15 flex items-center justify-center"
+              aria-label="Settings"
+            >
+              <Settings size={16} />
+            </button>
+          )}
         </div>
       </div>
     </div>
