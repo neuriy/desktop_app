@@ -1,123 +1,129 @@
-const { app, BrowserWindow, Tray, ipcMain, screen: electronScreen, nativeImage } = require('electron');
-const path = require('path');
+/**
+ * Electron main process bootstrap.
+ *
+ * Tray / menu-bar logic lives exclusively in SystemTrayService + adapters.
+ * This file only wires lifecycle, single-instance lock, and IPC.
+ */
 
-let mainWindow: any = null;
-let tray: any = null;
-let isPanelVisible = false;
+import {
+  app,
+  ipcMain,
+  shell,
+} from 'electron';
+import { SystemTrayService } from './tray/SystemTrayService';
+import { PanelWindow } from './window/PanelWindow';
+import { loadSettings, saveSettings } from './settings/store';
 
-const isDev = process.env.NODE_ENV !== 'production';
+const gotTheLock = app.requestSingleInstanceLock();
 
-// Hide dock icon before app is ready (macOS)
-if (process.platform === 'darwin') {
-  app.dock?.hide();
-}
-
-function createTray() {
-  // 16x16 purple square icon inline as base64 PNG
-  const iconDataUrl =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9h' +
-    'AAAARklEQVQ4jWNgGAWDHfwnQIyBgYH/DwMDA8P/AQ0MDCxEGsDAwMBALBgY' +
-    'GBiIVc/AwMBALBgYGBiIVc/AwMBALBgYGBiIVQ8AOdMKKwt4ELUAAAAASUVORK5CYII=';
-  const icon = nativeImage.createFromDataURL(iconDataUrl).resize({ width: 16, height: 16 });
-
-  tray = new Tray(icon);
-  tray.setToolTip('Neuriy — AI Assistant');
-
-  tray.on('click', (_event: any, bounds: any) => {
-    toggleWindow(bounds);
-  });
-}
-
-function getWindowPosition(trayBounds?: any) {
-  if (!mainWindow) return { x: 0, y: 0 };
-
-  const windowBounds = mainWindow.getBounds();
-  const trayRect = trayBounds || (tray ? tray.getBounds() : { x: 0, y: 0, width: 0, height: 0 });
-
-  let x = Math.round(trayRect.x + trayRect.width / 2 - windowBounds.width / 2);
-  let y = Math.round(trayRect.y + trayRect.height + 4);
-
-  const display = electronScreen.getDisplayNearestPoint({ x: trayRect.x, y: trayRect.y });
-
-  if (x + windowBounds.width > display.bounds.x + display.bounds.width) {
-    x = display.bounds.x + display.bounds.width - windowBounds.width - 8;
-  }
-  if (x < display.bounds.x) x = display.bounds.x + 8;
-
-  // Windows/Linux: tray is at bottom, so position window above it
-  if (trayRect.y > display.bounds.height / 2) {
-    y = Math.round(trayRect.y - windowBounds.height - 4);
+if (!gotTheLock) {
+  // Prevent duplicate tray instances
+  app.quit();
+} else {
+  // Hide Dock on macOS — this is a Menu Bar utility, not a Dock app
+  if (process.platform === 'darwin') {
+    app.dock?.hide();
   }
 
-  return { x, y };
-}
+  const panel = new PanelWindow();
+  const isDev = process.env.NODE_ENV !== 'production';
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 380,
-    height: 520,
-    show: false,
-    frame: false,
-    transparent: true,
-    resizable: false,
-    skipTaskbar: true,
-    alwaysOnTop: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      sandbox: false,
-      contextIsolation: true,
-    },
+  app.whenReady().then(() => {
+    const settings = loadSettings();
+
+    panel.create();
+
+    SystemTrayService.initialize(
+      {
+        appName: 'Neuriy',
+        tooltip: 'Neuriy — AI Assistant',
+        statusLabel: settings.statusLabel,
+      },
+      {
+        toggle: (bounds) => panel.toggle(bounds),
+        show: (bounds) => panel.show(bounds),
+        hide: () => panel.hide(),
+        isVisible: () => panel.isVisible(),
+      }
+    );
+
+    SystemTrayService.setNotificationsEnabled(settings.notificationsEnabled);
+    if (settings.launchAtLogin) {
+      SystemTrayService.setLaunchAtLogin(true);
+    }
+
+    // Dev convenience: open panel once so the UI is visible while iterating
+    if (isDev) {
+      setTimeout(() => SystemTrayService.show(), 800);
+    }
   });
 
-  const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+  app.on('second-instance', () => {
+    // Focus existing instance instead of spawning another tray icon
+    SystemTrayService.openMainWindow();
+  });
 
-  if (isDev) {
-    mainWindow.loadURL(devUrl);
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-  }
+  // Closing all windows must NOT quit — tray keeps the process alive on every OS
+  app.on('window-all-closed', () => {
+    // no-op (intentionally does not call app.quit)
+  });
 
-  mainWindow.on('blur', () => {
-    if (isPanelVisible) hideWindow();
+  app.on('before-quit', () => {
+    SystemTrayService.destroy();
+  });
+
+  app.on('will-quit', () => {
+    SystemTrayService.destroy();
+  });
+
+  // ── IPC ──────────────────────────────────────────────────────────────
+
+  ipcMain.on('hide-panel', () => {
+    panel.hideImmediate();
+  });
+
+  ipcMain.on('open-external', (_event, url: string) => {
+    if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+      void shell.openExternal(url);
+    }
+  });
+
+  ipcMain.handle('tray:get-platform', () => SystemTrayService.getPlatform());
+
+  ipcMain.handle('tray:get-settings', () => loadSettings());
+
+  ipcMain.handle(
+    'tray:set-settings',
+    (_event, partial: { launchAtLogin?: boolean; notificationsEnabled?: boolean }) => {
+      const next = saveSettings(partial);
+      if (typeof partial.launchAtLogin === 'boolean') {
+        SystemTrayService.setLaunchAtLogin(partial.launchAtLogin);
+      }
+      if (typeof partial.notificationsEnabled === 'boolean') {
+        SystemTrayService.setNotificationsEnabled(partial.notificationsEnabled);
+      }
+      return next;
+    }
+  );
+
+  ipcMain.handle(
+    'tray:notify',
+    (_event, payload: { title: string; body: string; silent?: boolean }) => {
+      SystemTrayService.showNotification(payload);
+    }
+  );
+
+  ipcMain.on('tray:quit', () => {
+    SystemTrayService.quit();
+  });
+
+  // Auth / OAuth popups open in the system browser
+  app.on('web-contents-created', (_event, contents) => {
+    contents.setWindowOpenHandler(({ url }) => {
+      if (/^https?:\/\//i.test(url)) {
+        void shell.openExternal(url);
+      }
+      return { action: 'deny' };
+    });
   });
 }
-
-function toggleWindow(trayBounds?: any) {
-  isPanelVisible ? hideWindow() : showWindow(trayBounds);
-}
-
-function showWindow(trayBounds?: any) {
-  if (!mainWindow) return;
-  const pos = getWindowPosition(trayBounds);
-  mainWindow.setPosition(pos.x, pos.y, false);
-  mainWindow.show();
-  mainWindow.focus();
-  isPanelVisible = true;
-  mainWindow.webContents.send('toggle-panel', true);
-}
-
-function hideWindow() {
-  if (!mainWindow) return;
-  mainWindow.webContents.send('toggle-panel', false);
-}
-
-app.whenReady().then(() => {
-  createTray();
-  createWindow();
-
-  // Auto-show in dev so you can immediately see the UI
-  if (isDev) {
-    setTimeout(() => showWindow(), 800);
-  }
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-ipcMain.on('hide-panel', () => {
-  if (mainWindow) {
-    mainWindow.hide();
-    isPanelVisible = false;
-  }
-});

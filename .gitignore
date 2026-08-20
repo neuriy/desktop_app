@@ -3,9 +3,16 @@ node_modules/
 
 # Build outputs
 dist/
+!vendor/**/dist/
+!agi-core/dist/
 dist-electron/
 release/
 out/
+
+# AGI Core runtime data
+data/agi/
+agi-core/node_modules/
+
 
 # Logs
 npm-debug.log*
